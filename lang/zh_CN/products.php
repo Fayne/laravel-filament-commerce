@@ -1,0 +1,21 @@
+<?php
+
+return [
+    'invalid_type' => '请选择有效的商品类型。',
+    'invalid_status' => '请选择有效的商品状态。',
+    'handler_required' => '虚拟商品和服务必须指定交付处理器标识。',
+    'option' => '规格项',
+    'value' => '规格值',
+    'id' => '编号',
+    'details' => '商品信息',
+    'name' => '商品名称',
+    'description' => '商品描述',
+    'seo_title' => 'SEO 标题',
+    'seo_description' => 'SEO 描述',
+    'default_name_required' => '必须填写默认内容语言的商品名称。',
+    'currency_must_match_tenant' => 'SKU 币种必须与租户交易币种一致。',
+    'locale_not_allowed' => '提交了当前租户未启用的语言。',
+    'price_help' => '以租户币种的最小单位填写；人民币单位为分。',
+    'types' => ['physical' => '实物商品', 'digital' => '虚拟商品', 'service' => '服务'],
+    'status' => ['draft' => '草稿', 'active' => '销售中', 'archived' => '已归档'],
+];

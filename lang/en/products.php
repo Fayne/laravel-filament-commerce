@@ -1,0 +1,21 @@
+<?php
+
+return [
+    'invalid_type' => 'Select a valid product type.',
+    'invalid_status' => 'Select a valid product status.',
+    'handler_required' => 'Digital and service products require a delivery handler identifier.',
+    'option' => 'Option',
+    'value' => 'Value',
+    'id' => 'ID',
+    'details' => 'Product details',
+    'name' => 'Product name',
+    'description' => 'Description',
+    'seo_title' => 'SEO title',
+    'seo_description' => 'SEO description',
+    'default_name_required' => 'A product name is required in the default content locale.',
+    'currency_must_match_tenant' => 'The SKU currency must match the tenant trading currency.',
+    'locale_not_allowed' => 'A locale that is not enabled for this tenant was submitted.',
+    'price_help' => 'Enter the smallest unit of the tenant currency; CNY uses fen.',
+    'types' => ['physical' => 'Physical', 'digital' => 'Digital', 'service' => 'Service'],
+    'status' => ['draft' => 'Draft', 'active' => 'Active', 'archived' => 'Archived'],
+];

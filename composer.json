@@ -1,0 +1,50 @@
+{
+  "name": "fayne/laravel-filament-commerce",
+  "description": "Multi-tenant commerce domain for Laravel and Filament.",
+  "type": "library",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.4",
+    "illuminate/database": "^13.0",
+    "illuminate/support": "^13.0",
+    "filament/filament": "^5.0",
+    "fayne/laravel-filament-cms-core": "dev-master",
+    "fayne/laravel-filament-promotion": "dev-master",
+    "fayne/shopping-cart": "dev-master"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^11.0",
+    "pestphp/pest": "^4.0",
+    "pestphp/pest-plugin-laravel": "^4.1",
+    "laravel/pint": "^1.27"
+  },
+  "autoload": {
+    "psr-4": {
+      "Fayne\\Commerce\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Fayne\\Commerce\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "pest",
+    "format": "pint --test",
+    "format:fix": "pint"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Fayne\\Commerce\\CommerceServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
+}
