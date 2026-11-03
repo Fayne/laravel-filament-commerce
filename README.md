@@ -1,8 +1,12 @@
+<p align="center"><img src="https://res.cloudinary.com/fayne/image/upload/v1787643269/fayne_logo.png" width="300"></p>
+
 # Laravel Filament Commerce
 
-多租户 Laravel / Filament 电商领域包，当前开发中。
+简体中文 | [English](docs/README.en.md)
 
-## 当前实现
+适用于 **PHP 8.4+、Laravel 13、Filament 5** 的电商领域包，支持租户隔离。
+
+## 功能与边界
 
 - 租户隔离的消费者、商品、SKU 和商品翻译模型；手机号和小程序身份按租户唯一，同一人可在不同商城拥有独立账户。
 - 商品类型：实物、虚拟商品、服务。
@@ -12,7 +16,15 @@
 - Filament 商品、订单、退款、库存及库存流水资源通过 `CommercePlugin` 注册到目标 Panel；订单详情显示虚拟商品/服务各单位的交付状态，不展示敏感结果。
 - 支付确认时为虚拟商品与服务按购买数量建立独立交付任务，任务使用稳定 Handler 标识、幂等键及加密结果；宿主接入自己的发放逻辑。
 
-## 接入
+## 1. 全新项目安装
+
+先在宿主 Composer 中配置本包及相关 Fayne 依赖的私有软件源，再执行：
+
+```bash
+composer require fayne/laravel-filament-commerce
+php artisan vendor:publish --tag=commerce-config
+php artisan migrate
+```
 
 包依赖宿主的 `fayne/laravel-filament-cms-core`，并使用其 `TenantContext`、`BelongsToTenant` 与 `ContentLocale`。租户模式必须先由 CMS Core 设置可信上下文；无上下文的租户查询会被拒绝。
 
@@ -125,3 +137,11 @@ app(\Fayne\Commerce\Inventory\Actions\ReleaseStockReservation::class)->execute($
 ## 交付撤销
 
 运行包迁移并向指定管理员授予 `tenant.revokeDelivery`，即可在订单详情申请撤销。宿主按交付 Handler 标识配置 `commerce.fulfillment.revokers` 和 `commerce.fulfillment.revocation_status_resolvers`。监听 `commerce.delivery.revocation_requested` 后，在事件所属租户上下文中用消息的 `delivery_task_id` 和 `attempt` 调用 `ProcessDeliveryRevocation::execute()`。超时处理由 `commerce:deliveries:recover` 转为未知，再调用 `ProcessDeliveryRevocation::reconcile()` 查询供应商；明确失败才可在后台重新申请。
+
+## 包检查
+
+在包根目录运行 `composer test` 和 `composer format`。在 GitHub Actions 中通过仓库变量 `PRIVATE_COMPOSER_URL` 配置提供私有依赖的 Composer 源，如需认证，通过 `COMPOSER_AUTH` secret 提供凭据。
+
+## 许可证
+
+本软件采用[专有许可证](LICENSE.md)，使用与分发须遵守其中的授权限制。

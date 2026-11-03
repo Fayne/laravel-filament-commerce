@@ -1,8 +1,12 @@
+<p align="center"><img src="https://res.cloudinary.com/fayne/image/upload/v1787643269/fayne_logo.png" width="300"></p>
+
 # Laravel Filament Commerce
 
-A multi-tenant commerce domain package for Laravel and Filament. This package is under development.
+[简体中文](../README.md) | English
 
-## Implemented so far
+A commerce package for **PHP 8.4+, Laravel 13, and Filament 5** with tenant isolation.
+
+## Features and scope
 
 - Tenant-scoped customer, product, SKU, and product translation models. Phone numbers and mini program identities are unique per tenant, so one person can have independent accounts in different stores.
 - Transactional order creation with purchase snapshots and idempotency, for guest contact details or a tenant customer reference.
@@ -13,7 +17,15 @@ A multi-tenant commerce domain package for Laravel and Filament. This package is
 - Product, order, refund, stock, and stock movement resources are registered on a target Filament Panel through `CommercePlugin`. Order details show each digital/service unit's delivery status without exposing sensitive results.
 - Payment confirmation creates one delivery task per purchased unit for digital products and services. Tasks use a stable handler key, an idempotency key, and encrypted results; the host supplies the actual provisioning logic.
 
-## Integration
+## 1. Installation
+
+Configure the private Composer source for this package and its Fayne dependencies, then run:
+
+```bash
+composer require fayne/laravel-filament-commerce
+php artisan vendor:publish --tag=commerce-config
+php artisan migrate
+```
 
 The package depends on the host's `fayne/laravel-filament-cms-core` package and uses its `TenantContext`, `BelongsToTenant`, and `ContentLocale`. In tenant mode, CMS Core must establish a trusted tenant context before queries; missing context is rejected.
 
@@ -126,3 +138,11 @@ For an independent customer table, set `CART_ENFORCE_USER_FOREIGN_KEY=false` bef
 ## Delivery revocation
 
 Run package migrations and grant `tenant.revokeDelivery` to administrators who can request revocation from the order details page. Configure `commerce.fulfillment.revokers` and `commerce.fulfillment.revocation_status_resolvers` by delivery handler key. Listen for `commerce.delivery.revocation_requested` and call `ProcessDeliveryRevocation::execute()` with the event's `delivery_task_id` and `attempt` in its tenant context. The `commerce:deliveries:recover` command marks stale attempts unknown. Call `ProcessDeliveryRevocation::reconcile()` to query the provider. Staff can request a new attempt after a definite failure.
+
+## Package checks
+
+Run `composer test` and `composer format` from the package root. In GitHub Actions, set the repository variable `PRIVATE_COMPOSER_URL` to the Composer registry that serves the private dependencies and supply credentials through the `COMPOSER_AUTH` secret if required.
+
+## License
+
+This software is distributed under the [proprietary license](../LICENSE.md).
