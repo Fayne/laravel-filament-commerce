@@ -23,9 +23,10 @@ Configure the private Composer source for this package and its Fayne dependencie
 
 ```bash
 composer require fayne/laravel-filament-commerce
-php artisan vendor:publish --tag=commerce-config
-php artisan migrate
+php artisan ec:core:install
 ```
+
+The installer publishes missing Commerce configuration, runs host migrations, and initializes the CMS permission catalog. For automated production deployments, use `php artisan ec:core:install --force --no-interaction`.
 
 The package depends on the host's `fayne/laravel-filament-cms-core` package and uses its `TenantContext`, `BelongsToTenant`, and `ContentLocale`. In tenant mode, CMS Core must establish a trusted tenant context before queries; missing context is rejected.
 

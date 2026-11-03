@@ -22,9 +22,10 @@
 
 ```bash
 composer require fayne/laravel-filament-commerce
-php artisan vendor:publish --tag=commerce-config
-php artisan migrate
+php artisan ec:core:install
 ```
+
+安装命令发布缺失的 Commerce 配置，运行宿主迁移并初始化 CMS 权限目录。生产自动部署可使用 `php artisan ec:core:install --force --no-interaction`。
 
 包依赖宿主的 `fayne/laravel-filament-cms-core`，并使用其 `TenantContext`、`BelongsToTenant` 与 `ContentLocale`。租户模式必须先由 CMS Core 设置可信上下文；无上下文的租户查询会被拒绝。
 

@@ -8,6 +8,7 @@ use Fayne\CMS\Support\Authorization\PermissionRegistry;
 use Fayne\Commerce\Catalog\Models\Product;
 use Fayne\Commerce\Catalog\Models\ProductVariant;
 use Fayne\Commerce\Checkout\Contracts\CartCheckout;
+use Fayne\Commerce\Console\Commands\InstallCommerce;
 use Fayne\Commerce\Customers\Contracts\MiniProgramCodeExchanger;
 use Fayne\Commerce\Customers\Contracts\SmsCodeSender;
 use Fayne\Commerce\Fulfillment\DeliveryHandlerRegistry;
@@ -68,7 +69,7 @@ final class CommerceServiceProvider extends ServiceProvider
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(RefundRequest::class, RefundRequestPolicy::class);
         if ($this->app->runningInConsole()) {
-            $this->commands(array_values(config('commerce.operations.commands', [])));
+            $this->commands([InstallCommerce::class, ...array_values(config('commerce.operations.commands', []))]);
             $this->publishes([__DIR__.'/../config/commerce.php' => config_path('commerce.php')], 'commerce-config');
         }
         config(['shopping-cart.models.skus.model' => config('commerce.cart.sku_model')]);
