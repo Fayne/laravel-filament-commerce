@@ -6,6 +6,8 @@ namespace Fayne\Commerce\Catalog\Models;
 
 use Fayne\CMS\Support\Concerns\BelongsToTenant;
 use Fayne\CMS\Support\ContentLocale;
+use Fayne\CMS\Support\TenantContext;
+use Fayne\Commerce\Catalog\Extensions\SkuExtensions;
 use Fayne\Commerce\Inventory\Models\StockLevel;
 use Fayne\Commerce\Tenancy\Actions\TenantCurrency;
 use Fayne\ShoppingCart\Contracts\Cartable;
@@ -20,11 +22,21 @@ final class ProductVariant extends Model implements Cartable
 
     protected $table = 'commerce_product_variants';
 
-    protected $fillable = ['product_id', 'sku', 'price_amount', 'currency', 'option_values', 'is_active'];
+    protected $fillable = ['product_id', 'sku', 'price_amount', 'currency', 'option_values', 'is_active', 'extension_data'];
 
     protected static function booted(): void
     {
         self::saving(function (self $variant): void {
+            if ($variant->exists && ((string) $variant->tenant_id !== (string) app(TenantContext::class)->requireId() || (string) $variant->getRawOriginal('tenant_id') !== (string) app(TenantContext::class)->requireId())) {
+                throw ValidationException::withMessages(['variant' => 'The SKU belongs to another tenant.']);
+            }
+            if (config('commerce.extensions.skus', []) !== [] || $variant->isDirty('extension_data')) {
+                $stored = $variant->getRawOriginal('extension_data');
+                $variant->extension_data = app(SkuExtensions::class)->validate(
+                    $variant->extension_data ?? [],
+                    $stored === null ? [] : json_decode($stored, true, flags: JSON_THROW_ON_ERROR),
+                );
+            }
             $currency = app(TenantCurrency::class)->current();
             if ($variant->currency !== null && $variant->currency !== $currency) {
                 throw ValidationException::withMessages([
@@ -37,7 +49,7 @@ final class ProductVariant extends Model implements Cartable
 
     protected function casts(): array
     {
-        return ['price_amount' => 'integer', 'option_values' => 'array', 'is_active' => 'boolean'];
+        return ['price_amount' => 'integer', 'option_values' => 'array', 'extension_data' => 'array', 'is_active' => 'boolean'];
     }
 
     public static function findByCodeOrFail(string $code): self

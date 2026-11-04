@@ -69,6 +69,9 @@ final class InstallCommerce extends Command
         ]);
         if ($status === self::SUCCESS) {
             app(InitializeCommercePermissions::class)->execute();
+            if ($this->getApplication()->has('filament:clear-cached-components')) {
+                $status = $this->call('filament:clear-cached-components');
+            }
         }
         if ($status !== self::SUCCESS || ! $demo) {
             return $status;

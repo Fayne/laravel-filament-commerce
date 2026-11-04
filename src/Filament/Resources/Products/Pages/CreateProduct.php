@@ -13,6 +13,8 @@ final class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function handleRecordCreation(array $data): Product
     {
         return app(SaveProduct::class)->execute(null, $data);

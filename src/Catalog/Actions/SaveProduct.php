@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Fayne\Commerce\Catalog\Actions;
 
 use Fayne\CMS\Support\ContentLocale;
+use Fayne\CMS\Support\TenantContext;
 use Fayne\Commerce\Catalog\Enums\ProductType;
+use Fayne\Commerce\Catalog\Extensions\ProductExtensions;
 use Fayne\Commerce\Catalog\Models\Product;
 use Fayne\Commerce\Catalog\Models\ProductTranslation;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,9 @@ final class SaveProduct
     /** @param array<string, mixed> $data */
     public function execute(?Product $product, array $data): Product
     {
+        if ($product !== null && (string) $product->tenant_id !== (string) app(TenantContext::class)->requireId()) {
+            throw ValidationException::withMessages(['product' => 'The product belongs to another tenant.']);
+        }
         $locales = ContentLocale::enabled() ? array_keys(ContentLocale::supported()) : [ContentLocale::default()];
         $translations = $data['translations'] ?? [];
         if (! isset($data['type']) || ProductType::tryFrom((string) $data['type']) === null) {
@@ -59,6 +64,8 @@ final class SaveProduct
                     collect($translation)->only(['name', 'description', 'seo_title', 'seo_description'])->all(),
                 );
             }
+
+            app(ProductExtensions::class)->save($product, $data['extensions'] ?? []);
 
             return $product->load('translations');
         });

@@ -19,7 +19,9 @@ test('commerce installs rolls back and reinstalls from its baseline migrations',
         expect(Schema::hasColumns('commerce_orders', ['payment_status', 'paid_at', 'cancellation_reason']))->toBeTrue()
             ->and(Schema::hasColumns('commerce_customers', ['wechat_appid', 'wechat_openid']))->toBeTrue()
             ->and(Schema::hasColumns('commerce_delivery_tasks', ['revocation_status', 'revocation_attempt']))->toBeTrue()
-            ->and(Schema::hasTable('commerce_customer_phone_codes'))->toBeTrue();
+            ->and(Schema::hasTable('commerce_customer_phone_codes'))->toBeTrue()
+            ->and(Schema::hasColumn('commerce_product_variants', 'extension_data'))->toBeTrue()
+            ->and(Schema::hasTable('commerce_product_extensions'))->toBeTrue();
         foreach (array_reverse($files) as $file) {
             (require $file)->down();
         }

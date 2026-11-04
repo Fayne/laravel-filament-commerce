@@ -1,6 +1,19 @@
 <?php
 
 return [
+    'content_seo' => '内容与 SEO',
+    'singular' => '商品',
+    'plural' => '商品管理',
+    'type_label' => '商品类型',
+    'status_label' => '状态',
+    'delivery_handler' => '交付处理器标识',
+    'variants' => '商品规格',
+    'sku' => 'SKU 编码',
+    'options' => '规格选项',
+    'price_amount' => '价格（最小货币单位）',
+    'is_active' => '启用',
+    'created_at' => '创建时间',
+
     'invalid_type' => '请选择有效的商品类型。',
     'invalid_status' => '请选择有效的商品状态。',
     'handler_required' => '虚拟商品和服务必须指定交付处理器标识。',

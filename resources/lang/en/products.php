@@ -1,6 +1,19 @@
 <?php
 
 return [
+    'content_seo' => 'Content and SEO',
+    'singular' => 'Product',
+    'plural' => 'Products',
+    'type_label' => 'Product type',
+    'status_label' => 'Status',
+    'delivery_handler' => 'Delivery handler',
+    'variants' => 'Variants',
+    'sku' => 'SKU',
+    'options' => 'Options',
+    'price_amount' => 'Price (minor units)',
+    'is_active' => 'Active',
+    'created_at' => 'Created at',
+
     'invalid_type' => 'Select a valid product type.',
     'invalid_status' => 'Select a valid product status.',
     'handler_required' => 'Digital and service products require a delivery handler identifier.',

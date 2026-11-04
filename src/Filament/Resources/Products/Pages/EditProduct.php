@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fayne\Commerce\Filament\Resources\Products\Pages;
 
 use Fayne\Commerce\Catalog\Actions\SaveProduct;
+use Fayne\Commerce\Catalog\Extensions\ProductExtensions;
 use Fayne\Commerce\Catalog\Models\Product;
 use Fayne\Commerce\Filament\Resources\ProductResource;
 use Filament\Resources\Pages\EditRecord;
@@ -14,12 +15,16 @@ final class EditProduct extends EditRecord
 {
     protected static string $resource = ProductResource::class;
 
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $product = $this->record->load('translations');
         foreach ($product->translations as $translation) {
             $data['translations'][$translation->locale] = $translation->only(['name', 'description', 'seo_title', 'seo_description']);
         }
+
+        $data['extensions'] = app(ProductExtensions::class)->fill($this->record);
 
         return $data;
     }

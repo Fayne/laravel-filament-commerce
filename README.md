@@ -153,8 +153,186 @@ app(\Fayne\Commerce\Inventory\Actions\ReleaseStockReservation::class)->execute($
 安装时会向已有内置角色补齐 Commerce 权限，包括租户管理员、内容管理员和只读人员的对应权限，以及单站点管理员与编辑角色的对应权限。已有其他权限会保留，自定义角色由管理员自行授权。再次运行安装命令会恢复内置角色缺失的 Commerce 基线权限。管理员通过当前租户成员关系及角色获得访问权限。
 
 
-Permission labels and groups are declared by this package in `resources/permissions.php`, with English and Simplified Chinese translations in `lang`. CMS Core resolves the registered metadata without business-name matching.
+Permission labels and groups are declared by this package in `resources/permissions.php`, with English and Simplified Chinese translations in `resources/lang`. CMS Core resolves the registered metadata without business-name matching.
 
 ### 初始数据库结构
 
 迁移集合面向全新安装。消费者及微信身份、支付状态、取消原因、密文文本字段和交付撤销状态直接包含在初始建表文件中，迁移按依赖顺序执行并可逆序回滚。使用旧迁移集合安装的开发数据库需在备份后重建，再运行初始化；本集合不负责将已有业务数据库升级到新基线。宿主迁移记录与旧文件名需要一并纳入重建流程。
+
+安装成功后会清除 Filament 组件缓存，以便后台加载新注册的电商资源。生产部署若使用组件缓存，请在完成 Panel 配置和安装后重新执行 `php artisan filament:cache-components`。
+
+## 商品级扩展
+
+在 commerce.extensions.products 配置中注册继承 Fayne\Commerce\Catalog\Extensions\ProductExtension 的类，Laravel 容器负责解析。key() 返回唯一标识（例如 details），字段状态路径使用 extensions.details.origin。fields(slot) 支持 basic、content 插槽，tabs() 返回额外的 Filament Tab。rules() 使用相对字段名，例如 origin 对应 required、string、max:100。创建、编辑、查看共用字段定义。
+
+运行 php artisan migrate 创建扩展存储表。默认按租户、商品及扩展标识存储 JSON。SaveProduct 在事务内验证并保存数据，只写入规则允许的字段。提交命名空间会替换其全部数据，省略命名空间时验证并保留已有数据。创建时必填规则同样生效。嵌套数组规则需明确允许的键。
+
+宿主可重写 fill(Product) 和 save(Product, array) 使用专用字段或关联表。适配器需使用商品相同的数据库连接、验证关联租户，并配置敏感字段审计过滤。扩展数据不会自动公开到前台 API。本次提供商品级扩展，商品翻译级扩展尚未提供，SKU 扩展见下文。
+
+## SKU 级扩展
+
+在 commerce.extensions.skus 中注册继承 Fayne\Commerce\Catalog\Extensions\SkuExtension 的类。key() 返回唯一标识，fields() 返回规格 Repeater 内的 Filament 字段，rules() 声明相对字段规则。比如字段路径 extension_data.logistics.barcode 对应 key 为 logistics、规则键为 barcode。字段的 required/maxLength 负责表单提示，rules() 负责所有模型保存入口的统一校验。
+
+运行 php artisan migrate 新增 SKU 的 extension_data JSON 字段。数据随每条规格加载，编辑与查看自动回填。仅保存注册扩展验证通过的字段，未提交命名空间会保留，已停用扩展的历史数据保留。嵌套数组规则需列出允许的键。提交命名空间替换其完整值，显式清空字段需规则允许 nullable。商品创建和编辑页面启用数据库事务，某条规格失败会回滚整次页面保存。
+
+SKU 扩展当前提供 JSON 元数据存储。条码唯一索引、品牌关系等需要数据库约束的业务字段，应使用宿主正式字段和专门的业务保存动作。自定义 SKU 存储适配器尚未提供。扩展字段不会自动进入购物车或订单快照。
+
+商品扩展表及 SKU extension_data 已并入初始商品目录迁移。新包首次安装直接运行迁移即可；已安装旧结构的开发数据库需按初始数据库结构章节重建，普通 migrate 不会修改已执行的建表迁移。
+
+## Product 与 SKU 完整扩展示例
+
+下面给商品增加产地、保养说明，给每条 SKU 增加条码和重量。扩展类放在宿主项目中。示例采用默认 JSON 存储。
+
+### 1. ProductDetails
+
+app/Commerce/Extensions/ProductDetails.php
+
+```php
+<?php
+
+namespace App\Commerce\Extensions;
+
+use Fayne\Commerce\Catalog\Extensions\ProductExtension;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Tabs\Tab;
+
+class ProductDetails extends ProductExtension
+{
+    public function key(): string
+    {
+        return 'details';
+    }
+
+    public function fields(string $slot): array
+    {
+        return match ($slot) {
+            'basic' => [
+                TextInput::make('extensions.details.origin')
+                    ->label(__('commerce_extensions.origin'))
+                    ->maxLength(100),
+            ],
+            default => [],
+        };
+    }
+
+    public function tabs(): array
+    {
+        return [
+            Tab::make(__('commerce_extensions.specifications'))->schema([
+                Textarea::make('extensions.details.care_instructions')
+                    ->label(__('commerce_extensions.care_instructions'))
+                    ->rows(4)->columnSpanFull(),
+            ]),
+        ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'origin' => ['nullable', 'string', 'max:100'],
+            'care_instructions' => ['nullable', 'string', 'max:2000'],
+        ];
+    }
+}
+```
+
+产地出现在商品信息 Tab，保养说明出现在新增的扩展信息 Tab，两者都保存到 details 命名空间。fields() 还支持 content 插槽，用于向现有内容与 SEO Tab 添加字段。
+
+### 2. SkuLogistics
+
+app/Commerce/Extensions/SkuLogistics.php
+
+```php
+<?php
+
+namespace App\Commerce\Extensions;
+
+use Fayne\Commerce\Catalog\Extensions\SkuExtension;
+use Filament\Forms\Components\TextInput;
+
+class SkuLogistics extends SkuExtension
+{
+    public function key(): string
+    {
+        return 'logistics';
+    }
+
+    public function fields(): array
+    {
+        return [
+            TextInput::make('extension_data.logistics.barcode')
+                ->label(__('commerce_extensions.barcode'))
+                ->maxLength(64),
+            TextInput::make('extension_data.logistics.weight_grams')
+                ->label(__('commerce_extensions.weight_grams'))
+                ->numeric()->integer()->minValue(0),
+        ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'barcode' => ['nullable', 'string', 'max:64'],
+            'weight_grams' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
+}
+```
+
+字段出现在每条商品规格内部。路径相对于当前规格行，无需添加 variants 或行号。编辑和查看时由模型转换自动回填，各 SKU 独立存储。
+
+### 3. 注册扩展
+
+```php
+// config/commerce.php
+'extensions' => [
+    'products' => [App\Commerce\Extensions\ProductDetails::class],
+    'skus' => [App\Commerce\Extensions\SkuLogistics::class],
+],
+```
+
+将配置合并进现有 commerce.php，保留其他配置。扩展 key 必须唯一，已有数据后应保持稳定。
+
+### 4. 宿主翻译
+
+```php
+<?php
+// lang/zh_CN/commerce_extensions.php
+return [
+    'origin' => '产地',
+    'specifications' => '扩展信息',
+    'care_instructions' => '保养说明',
+    'barcode' => '条码',
+    'weight_grams' => '重量（克）',
+];
+```
+
+```php
+<?php
+// lang/en/commerce_extensions.php
+return [
+    'origin' => 'Origin',
+    'specifications' => 'Additional details',
+    'care_instructions' => 'Care instructions',
+    'barcode' => 'Barcode',
+    'weight_grams' => 'Weight (grams)',
+];
+```
+
+字段标签跟随管理员界面语言。示例字段值是商品或 SKU 的共享属性，不会随商品内容语言分别保存。
+
+### 5. 准备和验收
+
+```bash
+php artisan config:clear
+php artisan migrate
+```
+
+全新安装会创建商品扩展表和 SKU 扩展字段。已执行旧建表迁移的开发库需按前述基线迁移规则重建。打开一个商品，填写两个商品扩展字段，并为两条 SKU 填写不同条码和重量。保存后重新编辑，再打开查看页，确认数据正确回填。
+
+### 保存、验证和适用范围
+
+商品扩展按 tenant_id、product_id 和 extension_key 保存到 commerce_product_extensions，可通过 app(ProductExtensions::class)->fill($product) 读取（类名需引入 Fayne\Commerce\Catalog\Extensions\ProductExtensions）。SKU 值从 $variant->extension_data['logistics'] 读取。表单字段规则负责操作提示，扩展 rules() 负责保存入口校验；必填字段需两处同时声明 required。给已有商品增加必填字段时，应先补齐历史数据。
+
+提交某个扩展命名空间会替换其中的完整数据；省略命名空间会保留原值，nullable 字段可显式清空。仅保存通过验证的字段，嵌套数组规则需列出允许的键。示例条码不具备数据库唯一约束，重量也不会自动影响购物车或运费。需要这些业务行为时由宿主接线。Product 可重写 fill()/save() 对接正式字段或关联表，须使用相同数据库连接并验证关联租户。SKU 当前使用 JSON 存储，尚无自定义存储适配器。

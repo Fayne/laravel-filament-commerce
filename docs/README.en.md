@@ -159,3 +159,181 @@ Permission labels and groups are declared by this package in `resources/permissi
 ### Initial database schema
 
 The migrations target fresh installations. Customer identities, payment state, cancellation reasons, encrypted text columns, and delivery revocation state are included in initial table creation. Migrations follow dependency order and support reverse rollback. Development databases installed using the previous migration set require a backed-up rebuild and reinitialization. This baseline does not upgrade existing business databases. Include host migration records and previous migration filenames in the rebuild procedure.
+
+Successful installation clears the Filament component cache so registered Commerce resources become available in the panel. Production deployments using this cache should run `php artisan filament:cache-components` after panel configuration and installation.
+
+## Product extensions
+
+Register ProductExtension subclasses in commerce.extensions.products. The container resolves each class. key() declares a unique identifier, fields(slot) supports basic/content, and tabs() returns additional Filament tabs. Use field paths such as extensions.details.origin and relative rules such as origin => required|string|max:100.
+
+Run php artisan migrate for the tenant-scoped extension JSON table. SaveProduct validates and saves within its transaction. Submitted namespaces replace their complete payload; omitted namespaces validate and preserve existing data. Required rules apply to creation. Explicitly declare allowed nested array keys.
+
+Override fill(Product) and save(Product, array) for dedicated storage. Adapters must use the same database connection, enforce tenant-safe relationships and configure sensitive audit filtering. Product extensions are not automatically exposed through public APIs. Translation and SKU extension contracts are deferred.
+
+## SKU extensions
+
+Register SkuExtension subclasses in commerce.extensions.skus. key() declares a unique namespace, fields() returns Filament fields inside each variant Repeater row, and rules() defines relative validation rules. For example, extension_data.logistics.barcode uses the logistics key with a barcode rule. Field validation gives UI feedback; model-save validation applies to all Eloquent saving entry points.
+
+Run php artisan migrate to add the SKU extension_data JSON column. Data is hydrated with each variant on edit/view. Only validated configured fields are accepted. Missing namespaces and disabled extensions preserve stored values. Submitted namespaces replace their entire payload. Explicit null requires nullable validation. Declare allowed nested array keys. Product create/edit pages use database transactions so a failed SKU rolls back the entire form save.
+
+This provides SKU JSON metadata. Indexed unique barcodes and related entities need dedicated host columns and business actions. Custom SKU storage adapters are not included. These fields are not automatically copied into cart or order snapshots.
+
+The product extension table and SKU extension_data column are included in the initial catalog migration. Fresh installs run the baseline directly. Development databases using earlier schemas require rebuilding as described in the initial schema section; migrate does not modify already-executed table creation migrations.
+
+## Complete Product and SKU extension example
+
+This example adds origin and care instructions to products, plus barcode and weight to each SKU. Create the following classes in the host application.
+
+### 1. ProductDetails
+
+app/Commerce/Extensions/ProductDetails.php
+
+```php
+<?php
+
+namespace App\Commerce\Extensions;
+
+use Fayne\Commerce\Catalog\Extensions\ProductExtension;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Tabs\Tab;
+
+class ProductDetails extends ProductExtension
+{
+    public function key(): string
+    {
+        return 'details';
+    }
+
+    public function fields(string $slot): array
+    {
+        return match ($slot) {
+            'basic' => [
+                TextInput::make('extensions.details.origin')
+                    ->label(__('commerce_extensions.origin'))
+                    ->maxLength(100),
+            ],
+            default => [],
+        };
+    }
+
+    public function tabs(): array
+    {
+        return [
+            Tab::make(__('commerce_extensions.specifications'))->schema([
+                Textarea::make('extensions.details.care_instructions')
+                    ->label(__('commerce_extensions.care_instructions'))
+                    ->rows(4)->columnSpanFull(),
+            ]),
+        ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'origin' => ['nullable', 'string', 'max:100'],
+            'care_instructions' => ['nullable', 'string', 'max:2000'],
+        ];
+    }
+}
+```
+
+The origin field appears in the basic tab. Care instructions appear in an additional tab. Both use the same details namespace. The content slot can also insert fields into the existing Content and SEO tab.
+
+### 2. SkuLogistics
+
+app/Commerce/Extensions/SkuLogistics.php
+
+```php
+<?php
+
+namespace App\Commerce\Extensions;
+
+use Fayne\Commerce\Catalog\Extensions\SkuExtension;
+use Filament\Forms\Components\TextInput;
+
+class SkuLogistics extends SkuExtension
+{
+    public function key(): string
+    {
+        return 'logistics';
+    }
+
+    public function fields(): array
+    {
+        return [
+            TextInput::make('extension_data.logistics.barcode')
+                ->label(__('commerce_extensions.barcode'))
+                ->maxLength(64),
+            TextInput::make('extension_data.logistics.weight_grams')
+                ->label(__('commerce_extensions.weight_grams'))
+                ->numeric()->integer()->minValue(0),
+        ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'barcode' => ['nullable', 'string', 'max:64'],
+            'weight_grams' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
+}
+```
+
+Fields appear inside each SKU row. Paths are relative to the row, so do not prefix them with variants or a row index. Model casts hydrate the saved values on edit and view.
+
+### 3. Register the classes
+
+```php
+// config/commerce.php
+'extensions' => [
+    'products' => [App\Commerce\Extensions\ProductDetails::class],
+    'skus' => [App\Commerce\Extensions\SkuLogistics::class],
+],
+```
+
+Keep the other configuration entries. Unique extension keys must stay stable after data is stored.
+
+### 4. Host translations
+
+```php
+<?php
+// lang/zh_CN/commerce_extensions.php
+return [
+    'origin' => '产地',
+    'specifications' => '扩展信息',
+    'care_instructions' => '保养说明',
+    'barcode' => '条码',
+    'weight_grams' => '重量（克）',
+];
+```
+
+```php
+<?php
+// lang/en/commerce_extensions.php
+return [
+    'origin' => 'Origin',
+    'specifications' => 'Additional details',
+    'care_instructions' => 'Care instructions',
+    'barcode' => 'Barcode',
+    'weight_grams' => 'Weight (grams)',
+];
+```
+
+These labels follow the administrator interface language. Extension values in this example are shared product/SKU attributes; they do not change with the content language.
+
+### 5. Prepare and verify
+
+```bash
+php artisan config:clear
+php artisan migrate
+```
+
+For fresh baseline installations, migrations create both storage locations. Previously installed development schemas need the documented rebuild procedure. Open a product, fill both product fields and two SKU rows with different barcode/weight values, save, reopen, and inspect the read-only product view.
+
+### Persistence and validation
+
+Product data is stored in commerce_product_extensions by tenant/product/key; read it with app(ProductExtensions::class)->fill($product). SKU values are available as $variant->extension_data['logistics']. Form rules provide immediate feedback, while extension rules validate all supported saving entry points. Add corresponding required rules in both locations for mandatory fields. Adding required fields to existing catalogs requires a backfill.
+
+A submitted namespace replaces its complete payload. Omitted namespaces preserve existing values; nullable fields can be cleared explicitly. Only validated fields are saved. Nested arrays must declare allowed keys. Barcode uniqueness and weight-based shipping/cart behavior require dedicated host integration. Custom Product fill/save adapters must use the same connection and enforce tenant-safe relations. SKU custom storage adapters are not available.

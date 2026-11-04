@@ -14,6 +14,7 @@ use Fayne\Commerce\Orders\Actions\ConfirmOrderPayment as ConfirmOrderPaymentActi
 use Fayne\Commerce\Tenancy\Actions\TenantCurrency;
 
 return [
+    'extensions' => ['products' => [], 'skus' => []],
     'cart' => [
         'sku_model' => ProductVariant::class,
         'sku_query' => CommerceSkuQuery::class,
