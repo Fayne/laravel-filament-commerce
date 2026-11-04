@@ -63,6 +63,7 @@ final class CommerceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->publishes([__DIR__ . '/../database/migrations' => database_path('migrations')], 'commerce-migrations');
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductVariant::class, InventoryPolicy::class);
         Gate::policy(StockMovement::class, StockMovementPolicy::class);

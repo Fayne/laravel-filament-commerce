@@ -53,7 +53,7 @@ final class InstallCommerce extends Command
             return self::FAILURE;
         }
 
-        $status = $this->call('vendor:publish', ['--tag' => 'commerce-config']);
+        $status = $this->call('vendor:publish', ['--tag' => ['commerce-config', 'commerce-migrations']]);
         if ($status !== self::SUCCESS) {
             return $status;
         }
