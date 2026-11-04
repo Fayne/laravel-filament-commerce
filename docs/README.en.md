@@ -28,6 +28,9 @@ php artisan ec:core:install
 
 The installer publishes missing Commerce configuration, runs host migrations, and initializes the CMS permission catalog. For automated production deployments, use `php artisan ec:core:install --force --no-interaction`.
 
+In local, testing, and staging, the installer can add two sample physical products and stock, plus cancelled, unshipped, partially shipped, and fully shipped demo orders. Orders are snapshots and do not trigger payment or shipping integrations. The prompt defaults to no. Use `--demo --no-interaction` for automation and include `--tenant=<tenant-id>` in tenant mode. Existing demo SKUs and orders are skipped.
+
+
 The package depends on the host's `fayne/laravel-filament-cms-core` package and uses its `TenantContext`, `BelongsToTenant`, and `ContentLocale`. In tenant mode, CMS Core must establish a trusted tenant context before queries; missing context is rejected.
 
 Register on the target Filament Panel Provider:

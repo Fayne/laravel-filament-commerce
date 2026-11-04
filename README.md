@@ -27,6 +27,9 @@ php artisan ec:core:install
 
 安装命令发布缺失的 Commerce 配置，运行宿主迁移并初始化 CMS 权限目录。生产自动部署可使用 `php artisan ec:core:install --force --no-interaction`。
 
+本地、测试和预发布环境安装时可选择生成两件示例实物商品及库存，以及已取消、待发货、部分发货和已发货的演示订单。订单为静态快照，不触发支付或物流，默认不生成。自动化使用 `--demo --no-interaction`，多租户模式还需传入 `--tenant=<租户ID>`。重复运行会跳过已有示例 SKU 和订单。
+
+
 包依赖宿主的 `fayne/laravel-filament-cms-core`，并使用其 `TenantContext`、`BelongsToTenant` 与 `ContentLocale`。租户模式必须先由 CMS Core 设置可信上下文；无上下文的租户查询会被拒绝。
 
 在目标 Filament Panel Provider 中注册：
