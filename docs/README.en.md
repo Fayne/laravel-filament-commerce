@@ -337,3 +337,11 @@ For fresh baseline installations, migrations create both storage locations. Prev
 Product data is stored in commerce_product_extensions by tenant/product/key; read it with app(ProductExtensions::class)->fill($product). SKU values are available as $variant->extension_data['logistics']. Form rules provide immediate feedback, while extension rules validate all supported saving entry points. Add corresponding required rules in both locations for mandatory fields. Adding required fields to existing catalogs requires a backfill.
 
 A submitted namespace replaces its complete payload. Omitted namespaces preserve existing values; nullable fields can be cleared explicitly. Only validated fields are saved. Nested arrays must declare allowed keys. Barcode uniqueness and weight-based shipping/cart behavior require dedicated host integration. Custom Product fill/save adapters must use the same connection and enforce tenant-safe relations. SKU custom storage adapters are not available.
+
+## Automatic CMS module registration
+
+With CMS Core installed, this package registers its module through its Laravel ServiceProvider. Panels extending `Fayne\CMS\Providers\AdminPanelProvider` / `TenantPanelProvider` automatically connect installed modules: business UI belongs to the ordinary panel in single-site mode and the workspace in multi-tenant mode. Installation grants no account permissions; policies still control navigation and access.
+
+In a fully custom PanelProvider, configure explicit plugins first, then return `app(\Fayne\CMS\Support\Modules\ModuleRegistry::class)->applyTo($panel)`. An explicitly configured plugin with the same ID is preserved. Do not register the same business plugin again after applying the registry. Earlier manual Plugin examples remain applicable to standalone or fully custom panels.
+
+Registered modules are enabled by default in this phase. There is no module-management UI, online installation/removal or runtime API/queue disabling. 

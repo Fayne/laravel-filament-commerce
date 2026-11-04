@@ -336,3 +336,11 @@ php artisan migrate
 商品扩展按 tenant_id、product_id 和 extension_key 保存到 commerce_product_extensions，可通过 app(ProductExtensions::class)->fill($product) 读取（类名需引入 Fayne\Commerce\Catalog\Extensions\ProductExtensions）。SKU 值从 $variant->extension_data['logistics'] 读取。表单字段规则负责操作提示，扩展 rules() 负责保存入口校验；必填字段需两处同时声明 required。给已有商品增加必填字段时，应先补齐历史数据。
 
 提交某个扩展命名空间会替换其中的完整数据；省略命名空间会保留原值，nullable 字段可显式清空。仅保存通过验证的字段，嵌套数组规则需列出允许的键。示例条码不具备数据库唯一约束，重量也不会自动影响购物车或运费。需要这些业务行为时由宿主接线。Product 可重写 fill()/save() 对接正式字段或关联表，须使用相同数据库连接并验证关联租户。SKU 当前使用 JSON 存储，尚无自定义存储适配器。
+
+## 已安装模块自动接入
+
+与 CMS Core 配合使用时，本包的 ServiceProvider 自动登记模块，无需在宿主逐个维护业务插件清单。继承 `Fayne\CMS\Providers\AdminPanelProvider` / `TenantPanelProvider` 的后台自动接入：单租户使用普通后台，多租户业务界面进入 workspace。安装模块不会自动授予账号权限，导航仍遵循 Policy。
+
+已有完全自定义的 PanelProvider 可在配置完显式插件后，将最终返回改为 `return app(\Fayne\CMS\Support\Modules\ModuleRegistry::class)->applyTo($panel);`。同 ID 的显式插件会保留；不要在此调用之后再次注册同一个业务插件。本文原有手动 Plugin 示例仍可用于独立接入或完全自定义面板。
+
+本期所有已登记模块默认启用；不提供后台启停、在线安装卸载或 API/队列停用。

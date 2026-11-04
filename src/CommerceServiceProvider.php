@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fayne\Commerce;
 
 use Fayne\CMS\Support\Authorization\PermissionRegistry;
+use Fayne\CMS\Support\Modules\ModuleRegistry;
 use Fayne\Commerce\Catalog\Models\Product;
 use Fayne\Commerce\Catalog\Models\ProductVariant;
 use Fayne\Commerce\Checkout\Contracts\CartCheckout;
@@ -32,6 +33,9 @@ final class CommerceServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->callAfterResolving(ModuleRegistry::class, function ($registry): void {
+            $registry->register('commerce', 'Commerce', CommercePlugin::class);
+        });
         $this->mergeConfigFrom(__DIR__.'/../config/commerce.php', 'commerce');
         $this->app->singleton(DeliveryHandlerRegistry::class);
         foreach ([
@@ -63,7 +67,7 @@ final class CommerceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->publishes([__DIR__ . '/../database/migrations' => database_path('migrations')], ['commerce-migrations', 'cms-module-assets']);
+        $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], ['commerce-migrations', 'cms-module-assets']);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductVariant::class, InventoryPolicy::class);
         Gate::policy(StockMovement::class, StockMovementPolicy::class);
