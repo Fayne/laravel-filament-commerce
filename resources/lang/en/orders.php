@@ -1,6 +1,27 @@
 <?php
 
 return [
+    'overview' => 'Overview',
+    'contacts' => 'Buyer and address',
+    'buyer_name' => 'Buyer name',
+    'phone' => 'Phone',
+    'email' => 'Email',
+    'no_address' => 'No shipping address',
+    'boolean' => ['yes' => 'Yes', 'no' => 'No'],
+    'address_fields' => ['recipient' => 'Recipient', 'name' => 'Recipient name', 'phone' => 'Phone', 'email' => 'Email', 'address' => 'Address', 'country' => 'Country', 'province' => 'Province', 'city' => 'City', 'district' => 'District', 'street' => 'Street', 'postal_code' => 'Postal code', 'postcode' => 'Postal code', 'address_line1' => 'Address line 1', 'address_line2' => 'Address line 2'],
+
+    'delivery_number' => 'Delivery ID',
+    'unit' => 'Unit number',
+    'shipped_at' => 'Shipped at',
+
+    'singular' => 'Order',
+    'more_actions' => 'More actions',
+    'status_label' => 'Order status',
+    'payment_status_label' => 'Payment status',
+    'created_at' => 'Created at',
+    'order_line' => 'Order item',
+    'payment_status' => ['pending' => 'Pending payment', 'paid' => 'Paid', 'cancelled' => 'Cancelled', 'review' => 'Needs review', 'not_required' => 'Payment not required'],
+
     'commerce_navigation' => 'Commerce',
     'revoke_delivery' => 'Request delivery revocation',
 

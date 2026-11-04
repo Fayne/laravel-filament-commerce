@@ -128,3 +128,41 @@ test('registers the customer delivery endpoint behind the configured customer gu
         ->and($route->uri())->toBe('api/commerce/customer/deliveries')
         ->and($route->gatherMiddleware())->toContain('auth:customer');
 });
+
+test('stock movement resource eager loads the tenant SKU', function (): void {
+    createInventorySchemaForTest();
+    DB::table('commerce_product_variants')->insert([
+        'id' => 1, 'tenant_id' => 0, 'product_id' => 1, 'sku' => 'MOVEMENT-SKU', 'price_amount' => 100,
+    ]);
+    StockMovement::query()->create([
+        'variant_id' => 1, 'reason' => 'adjustment', 'on_hand_delta' => 10, 'reserved_delta' => 0,
+    ]);
+
+    $movement = StockMovement::query()->with('variant')->firstOrFail();
+    expect($movement->relationLoaded('variant'))->toBeTrue()
+        ->and($movement->variant->sku)->toBe('MOVEMENT-SKU');
+});
+
+test('stock movement translations preserve administrator reasons and unknown sources', function (): void {
+    app()->setLocale('zh_CN');
+    $movement = new StockMovement(['reason' => 'reserve', 'source_type' => 'commerce_order']);
+    expect(StockMovementResource::reasonLabel($movement))->toBe('库存预占')
+        ->and(StockMovementResource::sourceLabel('commerce_order'))->toBe('电商订单');
+    $movement->source_type = 'adjustment';
+    expect(StockMovementResource::reasonLabel($movement))->toBe('reserve')
+        ->and(StockMovementResource::sourceLabel('host_system'))->toBe('host_system');
+    app()->setLocale('en');
+    $movement->source_type = 'commerce_order';
+    expect(StockMovementResource::reasonLabel($movement))->toBe('Stock reservation');
+});
+
+test('persisted stock movement records cannot be edited or deleted', function (): void {
+    createInventorySchemaForTest();
+    $movement = StockMovement::query()->create([
+        'variant_id' => 1, 'reason' => 'adjustment', 'on_hand_delta' => 10, 'reserved_delta' => 0,
+    ]);
+    expect(fn () => $movement->update(['on_hand_delta' => 20]))->toThrow(LogicException::class);
+    expect(fn () => $movement->delete())->toThrow(LogicException::class);
+    expect($movement->refresh()->on_hand_delta)->toBe(10)
+        ->and(StockMovement::query()->count())->toBe(1);
+});

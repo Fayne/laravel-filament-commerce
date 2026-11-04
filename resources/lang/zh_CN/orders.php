@@ -1,6 +1,27 @@
 <?php
 
 return [
+    'overview' => '订单概览',
+    'contacts' => '买家与地址',
+    'buyer_name' => '买家姓名',
+    'phone' => '联系电话',
+    'email' => '电子邮箱',
+    'no_address' => '未提供收货地址',
+    'boolean' => ['yes' => '是', 'no' => '否'],
+    'address_fields' => ['recipient' => '收货人', 'name' => '收货人姓名', 'phone' => '联系电话', 'email' => '电子邮箱', 'address' => '详细地址', 'country' => '国家或地区', 'province' => '省份', 'city' => '城市', 'district' => '区县', 'street' => '街道', 'postal_code' => '邮政编码', 'postcode' => '邮政编码', 'address_line1' => '地址第一行', 'address_line2' => '地址第二行'],
+
+    'delivery_number' => '交付任务编号',
+    'unit' => '交付单位序号',
+    'shipped_at' => '发货时间',
+
+    'singular' => '订单',
+    'more_actions' => '更多操作',
+    'status_label' => '订单状态',
+    'payment_status_label' => '支付状态',
+    'created_at' => '创建时间',
+    'order_line' => '订单商品',
+    'payment_status' => ['pending' => '待支付', 'paid' => '已支付', 'cancelled' => '已取消', 'review' => '待复核', 'not_required' => '无需支付'],
+
     'commerce_navigation' => '电商管理',
     'revoke_delivery' => '申请撤销交付',
 

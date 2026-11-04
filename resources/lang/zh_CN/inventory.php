@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'movement' => '库存流水',
+    'number' => '流水编号',
+    'variant_id' => 'SKU 编号',
+    'reasons' => ['reserve' => '库存预占', 'release' => '释放预占', 'commit' => '提交预占并扣减库存'],
+    'sources' => ['adjustment' => '库存调整', 'commerce_order' => '电商订单', 'cart' => '购物车', 'checkout' => '结算'],
+
     'stock' => '库存管理',
     'on_hand' => '实物库存',
     'reserved' => '已预占',
