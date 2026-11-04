@@ -63,7 +63,7 @@ final class CommerceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->publishes([__DIR__ . '/../database/migrations' => database_path('migrations')], 'commerce-migrations');
+        $this->publishes([__DIR__ . '/../database/migrations' => database_path('migrations')], ['commerce-migrations', 'cms-module-assets']);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductVariant::class, InventoryPolicy::class);
         Gate::policy(StockMovement::class, StockMovementPolicy::class);
@@ -71,7 +71,7 @@ final class CommerceServiceProvider extends ServiceProvider
         Gate::policy(RefundRequest::class, RefundRequestPolicy::class);
         if ($this->app->runningInConsole()) {
             $this->commands([InstallCommerce::class, ...array_values(config('commerce.operations.commands', []))]);
-            $this->publishes([__DIR__.'/../config/commerce.php' => config_path('commerce.php')], 'commerce-config');
+            $this->publishes([__DIR__.'/../config/commerce.php' => config_path('commerce.php')], ['commerce-config', 'cms-module-assets']);
         }
         config(['shopping-cart.models.skus.model' => config('commerce.cart.sku_model')]);
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');

@@ -53,24 +53,27 @@ final class InstallCommerce extends Command
             return self::FAILURE;
         }
 
-        $status = $this->call('vendor:publish', ['--tag' => ['commerce-config', 'commerce-migrations']]);
-        if ($status !== self::SUCCESS) {
-            return $status;
-        }
+        $status = self::SUCCESS;
+        if (! (app()->bound(\Fayne\CMS\Support\InstallationContext::class) && app(\Fayne\CMS\Support\InstallationContext::class)->prepared)) {
+            $status = $this->call('vendor:publish', ['--tag' => ['commerce-config', 'commerce-migrations']]);
+            if ($status !== self::SUCCESS) {
+                return $status;
+            }
 
-        $status = $this->call('migrate', ['--force' => true]);
-        if ($status !== self::SUCCESS) {
-            return $status;
-        }
+            $status = $this->call('migrate', ['--force' => true]);
+            if ($status !== self::SUCCESS) {
+                return $status;
+            }
 
-        $status = $this->call('db:seed', [
-            '--class' => InitializeRolesAndPermissionsSeeder::class,
-            '--force' => true,
-        ]);
-        if ($status === self::SUCCESS) {
-            app(InitializeCommercePermissions::class)->execute();
-            if ($this->getApplication()->has('filament:clear-cached-components')) {
-                $status = $this->call('filament:clear-cached-components');
+            $status = $this->call('db:seed', [
+                '--class' => InitializeRolesAndPermissionsSeeder::class,
+                '--force' => true,
+            ]);
+            if ($status === self::SUCCESS) {
+                app(InitializeCommercePermissions::class)->execute();
+                if ($this->getApplication()->has('filament:clear-cached-components')) {
+                    $status = $this->call('filament:clear-cached-components');
+                }
             }
         }
         if ($status !== self::SUCCESS || ! $demo) {
@@ -125,7 +128,7 @@ final class InstallCommerce extends Command
 
     private function seedDemoOrder(ProductVariant $variant, string $scenario): void
     {
-        $key = 'ec-demo-order-'.$scenario;
+        $key = 'ec-demo-order-' . $scenario;
         $paid = $scenario !== 'cancelled';
         $total = $variant->price_amount * 2;
         $order = Order::query()->firstOrCreate(['idempotency_key' => $key], [
