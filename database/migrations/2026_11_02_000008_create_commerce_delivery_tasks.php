@@ -25,8 +25,10 @@ return new class extends Migration
             $table->text('failure_reason')->nullable();
             $table->unsignedInteger('attempts')->default(0);
             $table->timestamp('completed_at')->nullable();
+            $table->string('revocation_status', 24)->nullable();
+            $table->unsignedInteger('revocation_attempt')->default(0);
             $table->timestamps();
-            $table->unique(['tenant_id', 'order_line_id', 'unit_number']);
+            $table->unique(['tenant_id', 'order_line_id', 'unit_number'], 'ec_delivery_tasks_tenant_order_line_unit_number_unique');
             $table->unique(['tenant_id', 'idempotency_key']);
             $table->foreign(['tenant_id', 'order_id'])->references(['tenant_id', 'id'])->on('commerce_orders')->cascadeOnDelete();
             $table->foreign(['tenant_id', 'order_line_id'])->references(['tenant_id', 'id'])->on('commerce_order_lines')->cascadeOnDelete();

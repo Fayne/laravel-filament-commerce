@@ -24,6 +24,15 @@ final class ProductResource extends Resource
 
     protected static bool $shouldCheckPolicyExistence = true;
 
+    protected static bool $isScopedToTenant = false;
+
+    protected static ?string $slug = 'commerce/products';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('commerce::orders.commerce_navigation');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'commerce_navigation' => 'Commerce',
     'revoke_delivery' => 'Request delivery revocation',
 
     'fulfillment' => 'Fulfilment',

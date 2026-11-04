@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'commerce_navigation' => '电商管理',
     'revoke_delivery' => '申请撤销交付',
 
     'fulfillment' => '履约进度',

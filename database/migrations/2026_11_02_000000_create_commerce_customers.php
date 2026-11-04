@@ -13,10 +13,13 @@ return new class extends Migration
         Schema::create('commerce_customers', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('tenant_id');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('email')->nullable();
             $table->string('phone', 32)->nullable();
-            $table->string('password');
+            $table->string('wechat_appid', 64)->nullable();
+            $table->string('wechat_openid', 128)->nullable();
+            $table->unique(['tenant_id', 'wechat_appid', 'wechat_openid'], 'commerce_customers_tenant_wechat_identity_unique');
+            $table->string('password')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('phone_verified_at')->nullable();
@@ -27,17 +30,10 @@ return new class extends Migration
             $table->unique(['tenant_id', 'phone']);
         });
 
-        Schema::table('commerce_orders', function (Blueprint $table): void {
-            $table->foreign(['tenant_id', 'customer_id'], 'commerce_orders_tenant_customer_foreign')
-                ->references(['tenant_id', 'id'])->on('commerce_customers')->restrictOnDelete();
-        });
     }
 
     public function down(): void
     {
-        Schema::table('commerce_orders', function (Blueprint $table): void {
-            $table->dropForeign('commerce_orders_tenant_customer_foreign');
-        });
         Schema::dropIfExists('commerce_customers');
     }
 };

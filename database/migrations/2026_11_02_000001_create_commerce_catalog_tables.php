@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('type', 24);
             $table->string('status', 24)->default('draft');
             $table->string('delivery_handler')->nullable();
-            $table->json('delivery_config')->nullable();
+            $table->longText('delivery_config')->nullable();
             $table->timestamps();
             $table->unique(['tenant_id', 'id']);
         });

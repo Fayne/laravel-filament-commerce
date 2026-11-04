@@ -1,0 +1,3 @@
+<?php
+
+return ['groups' => ['product' => 'Product', 'order' => 'Order', 'refundrequest' => 'Refund request', 'stock' => 'Stock', 'stockmovement' => 'Stock movement', 'operations' => 'Operations'], 'resources' => ['product' => 'Product', 'order' => 'Order', 'refundrequest' => 'Refund request', 'stock' => 'Stock', 'stockmovement' => 'Stock movement'], 'custom' => ['tenant_cancelOrder' => 'Cancel order', 'tenant_shipOrder' => 'Ship order', 'tenant_requestRefund' => 'Request refund', 'tenant_reviewRefund' => 'Review refund', 'tenant_adjustStock' => 'Adjust stock', 'tenant_revokeDelivery' => 'Revoke delivery']];

@@ -13,6 +13,7 @@ use Fayne\Commerce\Catalog\Models\Product;
 use Fayne\Commerce\Catalog\Models\ProductVariant;
 use Fayne\Commerce\Inventory\Actions\AdjustStock;
 use Fayne\Commerce\Orders\Models\Order;
+use Fayne\Commerce\Support\InitializeCommercePermissions;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\DB;
@@ -66,6 +67,9 @@ final class InstallCommerce extends Command
             '--class' => InitializeRolesAndPermissionsSeeder::class,
             '--force' => true,
         ]);
+        if ($status === self::SUCCESS) {
+            app(InitializeCommercePermissions::class)->execute();
+        }
         if ($status !== self::SUCCESS || ! $demo) {
             return $status;
         }

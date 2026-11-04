@@ -41,6 +41,15 @@ final class OrderResource extends Resource
 
     protected static bool $shouldCheckPolicyExistence = true;
 
+    protected static bool $isScopedToTenant = false;
+
+    protected static ?string $slug = 'commerce/orders';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('commerce::orders.commerce_navigation');
+    }
+
     public static function getNavigationLabel(): string
     {
         return __('commerce::orders.navigation');

@@ -33,7 +33,7 @@ return new class extends Migration
             $table->timestamp('committed_at')->nullable();
             $table->timestamp('released_at')->nullable();
             $table->timestamps();
-            $table->unique(['tenant_id', 'source_type', 'source_id', 'variant_id']);
+            $table->unique(['tenant_id', 'source_type', 'source_id', 'variant_id'], 'ec_stock_reserves_tenant_source_type_source_variant_unique');
             $table->foreign(['tenant_id', 'variant_id'])->references(['tenant_id', 'variant_id'])->on('commerce_stock_levels')->cascadeOnDelete();
         });
 

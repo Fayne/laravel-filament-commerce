@@ -10,14 +10,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('commerce_customers', function (Blueprint $table): void {
-            $table->string('password')->nullable()->change();
-            $table->string('name')->nullable()->change();
-            $table->string('wechat_appid', 64)->nullable()->after('phone');
-            $table->string('wechat_openid', 128)->nullable()->after('wechat_appid');
-            $table->unique(['tenant_id', 'wechat_appid', 'wechat_openid'], 'commerce_customers_tenant_wechat_identity_unique');
-        });
-
         Schema::create('commerce_customer_phone_codes', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('tenant_id');
@@ -34,9 +26,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('commerce_customer_phone_codes');
-        Schema::table('commerce_customers', function (Blueprint $table): void {
-            $table->dropUnique('commerce_customers_tenant_wechat_identity_unique');
-            $table->dropColumn(['wechat_appid', 'wechat_openid']);
-        });
     }
 };

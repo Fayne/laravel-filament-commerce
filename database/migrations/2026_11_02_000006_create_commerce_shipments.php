@@ -35,7 +35,7 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign(['tenant_id', 'shipment_id'])->references(['tenant_id', 'id'])->on('commerce_shipments')->cascadeOnDelete();
             $table->foreign(['tenant_id', 'order_line_id'])->references(['tenant_id', 'id'])->on('commerce_order_lines')->restrictOnDelete();
-            $table->unique(['tenant_id', 'shipment_id', 'order_line_id']);
+            $table->unique(['tenant_id', 'shipment_id', 'order_line_id'], 'ec_shipment_lines_tenant_shipment_order_line_unique');
         });
     }
 

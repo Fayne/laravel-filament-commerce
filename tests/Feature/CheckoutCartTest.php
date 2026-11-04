@@ -45,19 +45,17 @@ class CommerceCartIntegrationTestCase extends TestCase
 
         $root = dirname(__DIR__, 2);
         $migrations = [
+            $root.'/database/migrations/2026_11_02_000000_create_commerce_customers.php',
             $root.'/database/migrations/2026_11_02_000001_create_commerce_catalog_tables.php',
             dirname($root).'/laravel-filament-promotion/database/migrations/2026_11_02_000001_create_promotions_table.php',
             dirname($root).'/laravel-filament-promotion/database/migrations/2026_11_02_000002_create_coupons_table.php',
             dirname($root).'/laravel-filament-promotion/database/migrations/2026_11_02_000003_create_coupon_reservations_table.php',
             $root.'/database/migrations/2026_11_02_000002_create_commerce_inventory_tables.php',
             $root.'/database/migrations/2026_11_02_000003_create_commerce_order_tables.php',
-            $root.'/database/migrations/2026_11_02_000004_add_commerce_order_payment_state.php',
-            $root.'/database/migrations/2026_11_02_000005_add_commerce_order_cancellation_reason.php',
+            $root.'/database/migrations/2026_11_02_000004_create_commerce_payment_confirmations.php',
             $root.'/database/migrations/2026_11_02_000006_create_commerce_shipments.php',
             $root.'/database/migrations/2026_11_02_000007_create_commerce_refund_tables.php',
             $root.'/database/migrations/2026_11_02_000008_create_commerce_delivery_tasks.php',
-            $root.'/database/migrations/2026_11_02_000009_change_encrypted_commerce_columns_to_text.php',
-            $root.'/database/migrations/2026_11_02_000010_create_commerce_customers.php',
         ];
         foreach ($migrations as $migration) {
             (require $migration)->up();

@@ -149,3 +149,12 @@ app(\Fayne\Commerce\Inventory\Actions\ReleaseStockReservation::class)->execute($
 ## 许可证
 
 本软件采用[专有许可证](LICENSE.md)，使用与分发须遵守其中的授权限制。
+
+安装时会向已有内置角色补齐 Commerce 权限，包括租户管理员、内容管理员和只读人员的对应权限，以及单站点管理员与编辑角色的对应权限。已有其他权限会保留，自定义角色由管理员自行授权。再次运行安装命令会恢复内置角色缺失的 Commerce 基线权限。管理员通过当前租户成员关系及角色获得访问权限。
+
+
+Permission labels and groups are declared by this package in `resources/permissions.php`, with English and Simplified Chinese translations in `lang`. CMS Core resolves the registered metadata without business-name matching.
+
+### 初始数据库结构
+
+迁移集合面向全新安装。消费者及微信身份、支付状态、取消原因、密文文本字段和交付撤销状态直接包含在初始建表文件中，迁移按依赖顺序执行并可逆序回滚。使用旧迁移集合安装的开发数据库需在备份后重建，再运行初始化；本集合不负责将已有业务数据库升级到新基线。宿主迁移记录与旧文件名需要一并纳入重建流程。

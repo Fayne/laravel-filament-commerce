@@ -53,9 +53,10 @@ abstract class TestCase extends Orchestra
             $table->text('failure_reason')->nullable();
             $table->unsignedInteger('attempts')->default(0);
             $table->timestamp('completed_at')->nullable();
+            $table->string('revocation_status', 24)->nullable();
+            $table->unsignedInteger('revocation_attempt')->default(0);
             $table->timestamps();
         });
-        (require __DIR__.'/../database/migrations/2026_11_03_000012_add_delivery_revocation_state.php')->up();
         Schema::create('commerce_outbox_messages', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('tenant_id');

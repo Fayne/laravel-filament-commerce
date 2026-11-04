@@ -39,8 +39,8 @@ return new class extends Migration
             $table->unsignedBigInteger('amount');
             $table->json('unit_allocations');
             $table->timestamps();
-            $table->unique(['tenant_id', 'refund_request_id', 'order_line_id']);
-            $table->foreign(['tenant_id', 'refund_request_id'])->references(['tenant_id', 'id'])->on('commerce_refund_requests')->cascadeOnDelete();
+            $table->unique(['tenant_id', 'refund_request_id', 'order_line_id'], 'ec_refund_lines_tenant_refund_order_line_unique');
+            $table->foreign(['tenant_id', 'refund_request_id'], 'ec_refund_lines_tenant_refund_foreign')->references(['tenant_id', 'id'])->on('commerce_refund_requests')->cascadeOnDelete();
             $table->foreign(['tenant_id', 'order_line_id'])->references(['tenant_id', 'id'])->on('commerce_order_lines')->restrictOnDelete();
         });
     }

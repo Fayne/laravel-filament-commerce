@@ -15,6 +15,11 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->index();
             $table->unsignedBigInteger('customer_id')->nullable()->index();
             $table->string('status', 24)->default('awaiting_payment');
+            $table->string('payment_status', 20)->default('pending');
+            $table->string('payment_provider', 64)->nullable();
+            $table->string('payment_reference', 128)->nullable();
+            $table->timestamp('paid_at')->nullable();
+            $table->string('cancellation_reason', 500)->nullable();
             $table->char('currency', 3);
             $table->unsignedBigInteger('subtotal_amount');
             $table->unsignedBigInteger('shipping_amount');
@@ -31,6 +36,8 @@ return new class extends Migration
             $table->timestamp('reservation_expires_at');
             $table->timestamps();
             $table->unique(['tenant_id', 'idempotency_key']);
+            $table->foreign(['tenant_id', 'customer_id'], 'commerce_orders_tenant_customer_foreign')
+                ->references(['tenant_id', 'id'])->on('commerce_customers')->restrictOnDelete();
             $table->unique(['tenant_id', 'id']);
         });
 
@@ -49,7 +56,7 @@ return new class extends Migration
             $table->unsignedBigInteger('discount_amount');
             $table->unsignedBigInteger('payable_amount');
             $table->json('discount_units');
-            $table->json('delivery_snapshot')->nullable();
+            $table->longText('delivery_snapshot')->nullable();
             $table->timestamps();
             $table->unique(['tenant_id', 'id']);
             $table->foreign(['tenant_id', 'order_id'])->references(['tenant_id', 'id'])->on('commerce_orders')->cascadeOnDelete();

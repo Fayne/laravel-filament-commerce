@@ -25,6 +25,15 @@ final class StockLevelResource extends Resource
 
     protected static bool $shouldCheckPolicyExistence = true;
 
+    protected static bool $isScopedToTenant = false;
+
+    protected static ?string $slug = 'commerce/stock-levels';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('commerce::orders.commerce_navigation');
+    }
+
     public static function getNavigationLabel(): string
     {
         return __('commerce::inventory.stock');

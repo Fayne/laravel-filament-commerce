@@ -74,7 +74,7 @@ final class CommerceServiceProvider extends ServiceProvider
         }
         config(['shopping-cart.models.skus.model' => config('commerce.cart.sku_model')]);
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadTranslationsFrom(__DIR__.'/../lang', 'commerce');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'commerce');
         if (config('commerce.routes.customer_delivery.enabled', true)) {
             $this->loadRoutesFrom(__DIR__.'/../routes/customer.php');
         }

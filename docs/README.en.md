@@ -150,3 +150,12 @@ Run `composer test` and `composer format` from the package root. In GitHub Actio
 ## License
 
 This software is distributed under the [proprietary license](../LICENSE.md).
+
+Installation adds Commerce baseline permissions to existing built-in tenant manager, content editor, and viewer roles, plus single-site admin and editor roles. Other permissions are preserved. Administrators manage custom roles explicitly. Reinstallation restores missing Commerce baseline grants on built-in roles. Administrator access follows active tenant membership and scoped role assignments.
+
+
+Permission labels and groups are declared by this package in `resources/permissions.php`, with English and Simplified Chinese translations in `resources/lang`. CMS Core resolves the registered metadata without business-name matching.
+
+### Initial database schema
+
+The migrations target fresh installations. Customer identities, payment state, cancellation reasons, encrypted text columns, and delivery revocation state are included in initial table creation. Migrations follow dependency order and support reverse rollback. Development databases installed using the previous migration set require a backed-up rebuild and reinitialization. This baseline does not upgrade existing business databases. Include host migration records and previous migration filenames in the rebuild procedure.
